@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Chatterwave</title>
+<title>{{room}} - DjChat</title>
 <style>
     body {
         margin: 0 auto;
@@ -17,6 +17,7 @@
         font-family: 'Georgia', serif;
         color: #fff;
         text-shadow: 1px 1px 2px #000;
+        text-align: center;
     }
 
     .container {
@@ -104,6 +105,14 @@
         padding: 20px;
     }
 
+    #display {
+        background-color: rgba(255, 255, 255, 0.9);
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
     @media (max-width: 600px) {
         body {
             padding: 10px;
@@ -122,25 +131,77 @@
         }
     }
 </style>
+<script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
 </head>
 <body>
 
-<div align="center">
-    <h2>Chatterwave</h2>
+<h2>{{room}} - DjChat</h2>
+
+<div id="display">
+
+<!-- <div class="container darker">
+  <b>Tom</b><p>Hello Everyone, How Are You Guys Doing?</p>
+  <span class="time-left">20th, April 2021</span>
+</div> -->
+
 </div>
+
+<script>
+$(document).ready(function(){
+
+setInterval(function(){
+    $.ajax({
+        type: 'GET',
+        url : "/getMessages/{{room}}/",
+        success: function(response){
+            console.log(response);
+            $("#display").empty();
+            for (var key in response.messages)
+            {
+                var temp="<div class='container darker'><b>"+response.messages[key].user+"</b><p>"+response.messages[key].value+"</p><span class='time-left'>"+response.messages[key].date+"</span></div>";
+                $("#display").append(temp);
+            }
+        },
+        error: function(response){
+            alert('An error occurred')
+        }
+    });
+}, 1000);
+})
+</script>
 
 <div class="container">
     <div class="form-container">
-        <form id="post-form" method="POST" action="checkview">
+        <form id="post-form">
             {% csrf_token %}
-            <label for="room_name">Room Name</label>
-            <input type="text" name="room_name" id="room_name" placeholder="Enter room name" required />
-            <label for="username">Username</label>
-            <input type="text" name="username" id="username" placeholder="Enter your username" required />
-            <input type="submit" value="Enter Room">
+            <input type="hidden" name="username" id="username" value="{{username}}"/>
+            <input type="hidden" name="room_id" id="room_id" value="{{room_details.id}}"/>
+            <input type="text" name="message" id="message" placeholder="Type your message here..." required />
+            <input type="submit" value="Send">
         </form>
     </div>
 </div>
+
+<script type="text/javascript">
+  $(document).on('submit','#post-form',function(e){
+    e.preventDefault();
+
+    $.ajax({
+      type:'POST',
+      url:'/send',
+      data:{
+          username:$('#username').val(),
+          room_id:$('#room_id').val(),
+          message:$('#message').val(),
+          csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val(),
+      },
+      success: function(data){
+         //alert(data)
+      }
+    });
+    document.getElementById('message').value = ''
+  });
+</script>
 
 </body>
 </html>
