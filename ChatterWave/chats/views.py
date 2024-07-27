@@ -27,19 +27,30 @@ def room(request, room):
         'room_details': room_details
     })
 
+# chats/views.py
+from django.shortcuts import render, redirect
+from .models import Room, Message
+from django.http import HttpResponse, JsonResponse
+import logging
+
+logger = logging.getLogger(__name__)
+
 def checkview(request):
-    room = request.POST.get('room_name')
-    username = request.POST.get('username')
+    if request.method == 'POST':
+        room = request.POST.get('room_name')
+        username = request.POST.get('username')
 
-    if not room or not username:
-        return render(request, 'error.html', {"error": "Room name and username are required"}, status=400)
+        # Debugging: Log the received data
+        logger.debug(f"Received POST data: room_name={room}, username={username}")
 
-    if Room.objects.filter(name=room).exists():
-        return redirect('/' + room + '/?username=' + username)
+        if Room.objects.filter(name=room).exists():
+            return redirect(f'/{room}/?username={username}')
+        else:
+            new_room = Room.objects.create(name=room)
+            new_room.save()
+            return redirect(f'/{room}/?username={username}')
     else:
-        new_room = Room.objects.create(name=room)
-        new_room.save()
-        return redirect('/' + room + '/?username=' + username)
+        return HttpResponse("Bad Request", status=400)
 
 def send(request):
     message = request.POST.get('message')
