@@ -85,7 +85,7 @@ ASGI_APPLICATION = 'Chatterwave.asgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'channelsdb',
+        'NAME': 'chatterwavedb',
         'USER': 'root',
         'PASSWORD': 'root',
         'HOST': 'localhost',
